@@ -50,11 +50,9 @@ export async function scrapeThalie(): Promise<ScraperResult> {
                 const dateText = $(dayHeader[0]).text().trim();
                 
                 if (dateText.includes(currentDayStr)) {
-                    // starts actually checking for meals too
                     currentDayFound = true;
                 }
                 if(!dateText.includes(currentDayStr)) {
-                    // stops checking for meals
                     currentDayFound = false;
                 }
                 
@@ -80,8 +78,10 @@ export async function scrapeThalie(): Promise<ScraperResult> {
                     allergens.push(match[0]);
                 }
 
+                const cleanName = soupCell.replace(/\s*\d+(?:\s*,\s*\d+)*\s*$/, '').trim();
+
                 menuItems.push({
-                    name: soupCell,
+                    name: cleanName,
                     price: 0,
                     is_soup: true,
                     allergens,

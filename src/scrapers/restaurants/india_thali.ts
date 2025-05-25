@@ -94,27 +94,30 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
                     // 2. Remove weight if present (e.g., "150g")
                     cleanText = cleanText.replace(/^\d+g\s+/, '').trim();
                     
-                    // 3. Extract allergens (A: or /A: followed by numbers)
+                    // 3. Extract allergens (A: or /A: followed by numbers, can be separated by , or +)
                     let allergens: string[] = [];
-                    const allergenMatch = cleanText.match(/[\/,]\s*A:\s*(\d+(?:\s*,\s*\d+)*)/) || 
-                                        cleanText.match(/A:\s*(\d+(?:\s*,\s*\d+)*)/);
+                    const allergenMatch = cleanText.match(/[\/,]\s*A:\s*([\d+\s*,\s*]*\d+)/) || 
+                                        cleanText.match(/A:\s*([\d+\s*,\s*]*\d+)/);
                     if (allergenMatch) {
-                        allergens = (allergenMatch[1] || "").split(/\s*,\s*/).map(a => a.trim());
+                        allergens = (allergenMatch[1] || "").split(/\s*[,\+]\s*/).filter(a => a.trim() !== '').map(a => a.trim());
                     }
                     
-                    // 4. Extract description (text in parentheses, excluding allergen info)
+                    // 4. Extract description (text in first set of parentheses, clean allergens)
                     let description = '';
-                    const descriptionMatch = cleanText.match(/\(([^)]+?)(?:\s*[\/,]\s*A:|\s*A:)?\s*\d*\s*[)\/]/);
+                    const descriptionMatch = cleanText.match(/\(([^)]+)/);
                     if (descriptionMatch) {
-                        description = (descriptionMatch[1] || "").trim();
-                    }
-                    
-                    // 5. Extract name (remaining text before parentheses)
+                        description = (descriptionMatch[1] || "")
+                            .replace(/\s*[\/,]?\s*A:\s*[\d+\s*+,\s*]*\d+\+?\d*/g, '') // Remove allergen info with + or ,
+                            .replace(/\s*[,\/]?\s*$/, '')  // Remove trailing commas/slashes
+                            .trim();
+                        }
+
+                    // 5. Clean the name - remove everything in parentheses and normalize spaces
                     let name = cleanText
-                        .replace(/\s*\([^)]*\)/, '')  // Remove everything in parentheses
-                        .replace(/\s*[\/,]\s*A:.*$/, '') // Remove any trailing A:... after slash
+                        .replace(/\([^)]*\)/g, '')  // Remove everything in parentheses
+                        .replace(/\s+/g, ' ')  // Normalize spaces
                         .trim();
-                    
+                        
                     // 6. Handle VEG prefix
                     if (name.startsWith('VEG ')) {
                         name = 'VEGETARIAN ' + name.substring(4);
@@ -133,7 +136,7 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
 
                 if(elText.includes('Přílohy')) {
                     menuItems.push({
-                        name: "Přílohy: Naan (A: 1), Basmati rice, Vegetable salad",
+                        name: "Přílohy: Naan [A: 1], Basmati rice, Vegetable salad",
                         price: 0,
                         is_soup: false
                     })
