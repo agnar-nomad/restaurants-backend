@@ -26,7 +26,7 @@ export type Meal = {
 	name: string;
 	price: number;
 	description?: string;
-	alergens?: string[];
+	allergens?: string[];
 	is_vegan?: boolean;
 	is_gluten_free?: boolean;
 	is_soup?: boolean;

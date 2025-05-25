@@ -42,7 +42,7 @@ export class ScraperManager {
 	}
 
 	private async saveResult(result: ScraperResult) {
-		if (!result.success || !result.data) {
+		if (!result.success || !result.data || result.data.length === 0) {
 			logger.warn(
 				`[ScraperManager] Not saving failed scrape for ${result.scraperName}`,
 			);
@@ -56,11 +56,11 @@ export class ScraperManager {
 			});
 
 			if (restaurant) {
-				// await db.insert(scrapedDataTable).values({
-				//   restaurantId: restaurant.id,
-				//   content: result.data,
-				//   scrapedAt: new Date()
-				// });
+				await db.insert(scrapedDataTable).values({
+				  restaurantId: restaurant.id,
+				  content: result.data,
+				  scrapedAt: new Date()
+				});
 
 				logger.info(
 					`[ScraperManager] Saved ${result.data.length} items from ${result.scraperName}`,
