@@ -15,7 +15,7 @@ export function createScraperManager() {
 	return (
 		new ScraperManager()
 			// .register({ name: RESTAURANT_NAMES.buddha, scrape: scrapeBuddha })
-			// .register({ name: RESTAURANT_NAMES.thalie, scrape: scrapeThalie })
+			.register({ name: RESTAURANT_NAMES.thalie, scrape: scrapeThalie })
 			.register({ name: RESTAURANT_NAMES.nepalIndiaThali, scrape: scrapeIndiaThali })
 	);
 	// Add more scrapers here as they are created

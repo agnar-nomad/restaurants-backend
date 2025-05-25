@@ -39,7 +39,8 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
         const html = await page.content();
         const $ = cheerio.load(html);
 
-        let currentDayStr = getTodayDateCzechStr('DD. M.')
+        // let currentDayStr = getTodayDateCzechStr('DD. M.') // TODO
+        let currentDayStr = "23. 5."
         let currentDayFound = false;
         let menuItems: Meal[] = [];
 
@@ -132,7 +133,7 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
 
                 if(elText.includes('Přílohy')) {
                     menuItems.push({
-                        name: "Přílohy: Naan (A: 1), Basmati rice, Vegetable salat",
+                        name: "Přílohy: Naan (A: 1), Basmati rice, Vegetable salad",
                         price: 0,
                         is_soup: false
                     })

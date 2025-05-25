@@ -35,8 +35,8 @@ export async function scrapeThalie(): Promise<ScraperResult> {
         const html = await page.content();
         const $ = cheerio.load(html);
 
-        // Find all day sections
-        let currentDayStr = getTodayDateCzechStr('DD.MM.YYYY')
+        // let currentDayStr = getTodayDateCzechStr('DD.MM.YYYY') // TODO
+        let currentDayStr = "26.05.2025"
         let currentDayFound = false;
         let menuItems: Meal[] = [];
 
@@ -115,6 +115,8 @@ export async function scrapeThalie(): Promise<ScraperResult> {
                     allergens: allergens.length > 1 ? allergens.slice(1) : undefined,
                     is_soup: false,
                 });
+
+                return;
             }
         });
 
