@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { envConfig } from "@/config/env.js";
-// Database import is kept for future use
-import { db } from "@/db/index.js";
-import { logger } from "@/utils/logger.js";
 import express from "express";
+import { db } from "@/db/index.js";
+import { scrapedDataTable } from "@/db/schema.js";
+import { logger } from "@/utils/logger.js";
+import { desc, eq } from "drizzle-orm";
 
 // Initialize the database connection
 const initDb = async () => {
@@ -17,17 +18,43 @@ const initDb = async () => {
 };
 
 async function bootstrap() {
-	// Initialize database connection
 	await initDb();
 
 	const app = express();
-
-	// Middleware
 	app.use(express.json());
 
 	// Health check endpoint
 	app.get("/health", (_, res) => {
 		res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+	});
+
+	// Get all restaurants with their latest scraped data
+    // TODO add some basic Auth
+	app.get("/restaurants", async (_, res) => {
+		try {
+			const restaurants = await db.query.restaurantsTable.findMany();
+
+			// For each restaurant, get the latest scraped data
+			const restaurantsWithData = await Promise.all(
+				restaurants.map(async (restaurant) => {
+					const latestData = await db.query.scrapedDataTable.findFirst({
+						where: eq(scrapedDataTable.restaurantId, restaurant.id),
+						orderBy: [desc(scrapedDataTable.scrapedAt)],
+					});
+
+					return {
+						...restaurant,
+						latestData: latestData || null,
+					};
+				})
+			);
+
+			res.status(200).json(restaurantsWithData);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Unknown error';
+			logger.error('Failed to fetch restaurants:', message);
+			res.status(500).json({ error: 'Failed to fetch restaurants', details: message });
+		}
 	});
 
 	// 404 handler
