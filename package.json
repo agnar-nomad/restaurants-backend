@@ -1,0 +1,46 @@
+{
+	"name": "restaurants-backend",
+	"version": "1.0.0",
+	"description": "A web scraper for restaurant menus with configurable targets",
+	"main": "dist/index.js",
+	"type": "module",
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsx watch src/index.ts",
+		"start": "node dist/index.js",
+		"scrape": "tsx src/bin/scrape.ts",
+		"scrape:concurrent": "tsx src/bin/scrape.ts --concurrent",
+		"migrate:generate": "drizzle-kit generate:pg",
+		"migrate:push": "drizzle-kit push:pg",
+		"migrate:up": "drizzle-kit up:pg",
+		"migrate:down": "drizzle-kit down:pg",
+		"lint": "biome check",
+		"format": "biome format --write .",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": ["scraper", "restaurants", "menu", "typescript"],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@neondatabase/serverless": "^1.0.0",
+		"cheerio": "~1.0.0",
+		"dotenv": "~16.5.0",
+		"drizzle-kit": "~0.31.1",
+		"drizzle-orm": "~0.43.1",
+		"express": "~5.1.0",
+		"node-cron": "~4.0.7",
+		"pg": "~8.16.0",
+		"playwright": "~1.52.0",
+		"winston": "~3.17.0",
+		"zod": "~3.25.23"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"@types/express": "~5.0.2",
+		"@types/node": "~22.15.21",
+		"@types/node-cron": "~3.0.11",
+		"@types/pg": "~8.15.2",
+		"tsx": "~4.19.4",
+		"typescript": "~5.6.0"
+	}
+}
