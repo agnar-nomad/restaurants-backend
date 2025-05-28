@@ -5,7 +5,6 @@ const envSchema = z.object({
 		.enum(["development", "production", "test"])
 		.default("development"),
 	PORT: z.string().default("3006"),
-	DATABASE_URL: z.string().min(1, "Database URL is required"),
 	LOG_LEVEL: z
 		.enum(["error", "warn", "info", "http", "verbose", "debug", "silly"])
 		.default("info"),
