@@ -25,7 +25,7 @@ async function main() {
 	for (const single_res of results) {
 		const status = single_res.success ? "✓" : "✗";
 		console.log(`
-            ${status} ${single_res.scraperName.padEnd(15)} 
+            ${status} ${single_res.scraperKey.padEnd(15)} 
             ${single_res.duration}ms 
             ${single_res.success ? `${single_res.data?.length} items` : `Failed: ${single_res.error}`}
         `);

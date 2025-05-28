@@ -2,9 +2,9 @@ import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
-import { RESTAURANT_NAMES } from "../index.js";
 import { getProcessedScraperError } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
+import type { RestaurantKey } from "@/db/restaurants_seed.js";
 
 // data shape:
 // <random div with random class id>
@@ -18,14 +18,14 @@ import type { Meal } from "@/db/schema.js";
 
 export async function scrapePivniceNaRohu(): Promise<ScraperResult> {
     const startTime = Date.now();
-    const scraperName = RESTAURANT_NAMES.pivniceNaRohu;
-    const url = "https://www.pivnicenarohu.cz/kopie-poledn%C3%AD-menu";
+    const scraperKey: RestaurantKey = "pivnice-na-rohu";
+    const scrapeUrl = "https://www.pivnicenarohu.cz/kopie-poledn%C3%AD-menu";
     const browser = await chromium.launch({ headless: true });
 
     try {
-        logger.info(`[${scraperName}] Starting scraper...`);
+        logger.info(`[${scraperKey}] Starting scraper...`);
         const page = await browser.newPage();
-        await page.goto(url, {
+        await page.goto(scrapeUrl, {
             waitUntil: "domcontentloaded",
             timeout: 30000,
         });
@@ -85,13 +85,13 @@ export async function scrapePivniceNaRohu(): Promise<ScraperResult> {
         return {
             success: true,
             data: menuItems,
-            scraperName,
+            scraperKey,
             duration: Date.now() - startTime,
         };
     } catch (error) {
         return getProcessedScraperError({
             error,
-            scraperName,
+            scraperKey,
             startTime,
         });
     } finally {

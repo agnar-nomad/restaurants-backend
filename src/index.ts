@@ -4,6 +4,7 @@ import express from "express";
 import { db } from "@/db/index.js";
 import { logger } from "@/utils/logger.js";
 import type { ScrapedDataType } from "@/db/schema.js";
+import { setupCronJobs } from "./cron.js";
 
 // Initialize the database connection
 const initDb = async () => {
@@ -62,8 +63,12 @@ async function bootstrap() {
 		}
 	});
 
+    // TODO an endpoint that dump the error logs
+    // TODO removing old scrapeData entries
+    // TODO cron
+    // TODO if cron doesnt work, check if data is new enough, otherwise scrape
     app.get("/dump", async (_, res) => {
-		try {   
+		try {
 			await db.read();
 
 			res.status(200).json(db.data);
@@ -89,6 +94,11 @@ async function bootstrap() {
 	// Start server
 	const server = app.listen(envConfig.PORT, () => {
 		logger.info(`🚀 Server running on http://localhost:${envConfig.PORT}`);
+
+        // Initialize cron jobs
+        if (process.env.NODE_ENV === 'production') {
+            setupCronJobs();
+        }
 	});
 
 	// Handle shutdown

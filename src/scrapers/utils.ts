@@ -1,6 +1,7 @@
 import { logger } from "@/utils/logger.js";
 import { ScraperResult } from "./types.js";
 import dayjs from 'dayjs';
+import { RestaurantKey } from "@/db/restaurants_seed.js";
 
 export function getTodayDateCzechStr(format?: string): string {
     // For current date with leading zeros or custom format
@@ -9,20 +10,20 @@ export function getTodayDateCzechStr(format?: string): string {
 
 type GetProcessedScraperErrorType = {
     error: unknown,
-    scraperName: string,
+    scraperKey: RestaurantKey,
     startTime: number,
 }
 export function getProcessedScraperError({
     error,
-    scraperName,
+    scraperKey,
     startTime,
 }: GetProcessedScraperErrorType): ScraperResult {
     const message = error instanceof Error ? error.message : "Unknown error";
-    logger.error(`[${scraperName}] Error:`, message);
+    logger.error(`[${scraperKey}] Error:`, message);
     return {
         success: false,
         error: message,
-        scraperName,
+        scraperKey,
         duration: Date.now() - startTime,
     };
 }

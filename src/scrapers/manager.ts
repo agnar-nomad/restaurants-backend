@@ -16,8 +16,18 @@ export class ScraperManager {
 		for (const scraper of this.scrapers) {
 			logger.info(`[ScraperManager] Running ${scraper.name}...`);
 			const result = await scraper.scrape();
-			results.push(result);
-			await this.saveResult(result);
+			
+            const saveSuccess = await this.saveResult(result);
+            if(saveSuccess) {
+                results.push(result);
+            } else {
+                results.push({
+                    error: "Failed to save result",
+                    scraperKey: result.scraperKey,
+                    success: false,
+                    duration: result.duration,
+                })
+            }
 		}
 
 		return results;
@@ -42,15 +52,15 @@ export class ScraperManager {
 	private async saveResult(result: ScraperResult) {
 		if (!result.success || !result.data || result.data.length === 0) {
 			logger.warn(
-				`[ScraperManager] Not saving failed scrape for ${result.scraperName}`,
+				`[ScraperManager] Not saving failed scrape for ${result.scraperKey}`,
 			);
-			return;
+			return false;
 		}
 
 		try {
             logger.info("Saving result:", JSON.stringify(result, null ,2));
             await db.read();
-            const restaurant = db.data.restaurants.find((r) => r.name === result.scraperName)
+            const restaurant = db.data.restaurants.find((r) => r.key === result.scraperKey)
 
 			if (restaurant) {
 				// Create the new scraped data entry
@@ -71,20 +81,24 @@ export class ScraperManager {
                 });
 
 				logger.info(
-					`[ScraperManager] Saved ${result.data.length} items from ${result.scraperName}`,
+					`[ScraperManager] Saved ${result.data.length} items from ${result.scraperKey}`,
 				);
 			}
+
+            return true;
 		} catch (error) {
 			if (error instanceof Error) {
 				logger.error(
-					`[ScraperManager] Error saving ${result.scraperName} data:`,
+					`[ScraperManager] Error saving ${result.scraperKey} data:`,
 					error.message,
 				);
 			} else {
 				logger.error(
-					`[ScraperManager] Unknown error saving ${result.scraperName} data`,
+					`[ScraperManager] Unknown error saving ${result.scraperKey} data`,
 				);
 			}
+
+            return false
 		}
 	}
 }

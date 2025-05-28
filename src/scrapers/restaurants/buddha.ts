@@ -2,21 +2,21 @@ import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
-import { RESTAURANT_NAMES } from "../index.js";
 import { getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
+import { RestaurantKey } from "@/db/restaurants_seed.js";
 
 
 export async function scrapeBuddha(): Promise<ScraperResult> {
     const startTime = Date.now();
-    const scraperName = RESTAURANT_NAMES.buddha;
-    const url = "https://www.menicka.cz/9564-buddha.html";
+    const scraperKey: RestaurantKey = "buddha";
+    const scrapeUrl = "https://www.menicka.cz/9564-buddha.html";
     const browser = await chromium.launch({ headless: true });
 
     try {
-        logger.info(`[${scraperName}] Starting scraper...`);
+        logger.info(`[${scraperKey}] Starting scraper...`);
         const page = await browser.newPage();
-        await page.goto(url, {
+        await page.goto(scrapeUrl, {
             waitUntil: "networkidle",
             timeout: 30000,
         });
@@ -139,13 +139,13 @@ export async function scrapeBuddha(): Promise<ScraperResult> {
         return {
             success: true,
             data: menuItems,
-            scraperName,
+            scraperKey,
             duration: Date.now() - startTime,
         };
     } catch (error) {
         return getProcessedScraperError({
             error,
-            scraperName,
+            scraperKey,
             startTime,
         });
     } finally {

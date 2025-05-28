@@ -7,6 +7,7 @@ import { scrapeUTrechCertu } from "./restaurants/u-trech-certu.js";
 
 
 export function createScraperManager() {
+	// Add more scrapers here as they are created
 	return new ScraperManager()
 		.register({ name: "buddha", scrape: scrapeBuddha })
 		.register({ name: "thalie", scrape: scrapeThalie })
@@ -22,7 +23,6 @@ export function createScraperManager() {
 			name: "u-trech-certu",
 			scrape: scrapeUTrechCertu,
 		});
-	// Add more scrapers here as they are created
 }
 
 export * from "./manager.js";

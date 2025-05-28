@@ -10,7 +10,7 @@ type Database = {
 }
 
 const defaultData: Database = {
-    restaurants: restaurantsList.slice(0,2),
+    restaurants: restaurantsList,
     scrapedData: [],
     last_scrape: null
 }

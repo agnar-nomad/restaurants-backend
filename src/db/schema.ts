@@ -3,7 +3,7 @@ import { z } from "zod";
 // Restaurant schema and types
 const restaurantSchema = {
 	name: z.string().min(1, "Name is required"),
-	key: z.nullable(z.string()),
+	key: z.string(),
 	url: z.string().url("Invalid URL").min(1, "URL is required"),
 	address: z.string().min(1, "Address is required"),
 	acceptsCards: z.boolean().optional(),

@@ -2,9 +2,9 @@ import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
-import { RESTAURANT_NAMES } from "../index.js";
 import { getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
+import type { RestaurantKey } from "@/db/restaurants_seed.js";
 
 // data shape:
 // linear, not nested
@@ -20,14 +20,14 @@ import type { Meal } from "@/db/schema.js";
 
 export async function scrapeThalie(): Promise<ScraperResult> {
     const startTime = Date.now();
-    const scraperName = RESTAURANT_NAMES.thalie;
-    const url = "https://www.thalie.cz/denni-menu/";
+    const scraperKey: RestaurantKey = "thalie";
+    const scrapeUrl = "https://www.thalie.cz/denni-menu/";
     const browser = await chromium.launch({ headless: true });
 
     try {
-        logger.info(`[${scraperName}] Starting scraper...`);
+        logger.info(`[${scraperKey}] Starting scraper...`);
         const page = await browser.newPage();
-        await page.goto(url, {
+        await page.goto(scrapeUrl, {
             waitUntil: "networkidle",
             timeout: 30000,
         });
@@ -127,13 +127,13 @@ export async function scrapeThalie(): Promise<ScraperResult> {
         return {
             success: true,
             data: menuItems,
-            scraperName,
+            scraperKey,
             duration: Date.now() - startTime,
         };
     } catch (error) {
         return getProcessedScraperError({
             error,
-            scraperName,
+            scraperKey,
             startTime,
         });
     } finally {
