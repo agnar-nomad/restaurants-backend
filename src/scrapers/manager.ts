@@ -1,7 +1,5 @@
 import { db } from "@/db/index.js";
-import { restaurantsTable, scrapedDataTable } from "@/db/schema.js";
 import { logger } from "@/utils/logger.js";
-import { eq } from "drizzle-orm";
 import type { Scraper, ScraperResult } from "./types.js";
 
 export class ScraperManager {
@@ -50,17 +48,27 @@ export class ScraperManager {
 		}
 
 		try {
-            logger.info("Saving result:", result);
-            const restaurant = await db.query.restaurantsTable.findFirst({
-                where: eq(restaurantsTable.name, result.scraperName),
-			});
+            logger.info("Saving result:", JSON.stringify(result, null ,2));
+            await db.read();
+            const restaurant = db.data.restaurants.find((r) => r.name === result.scraperName)
 
 			if (restaurant) {
-				await db.insert(scrapedDataTable).values({
-				  restaurantId: restaurant.id,
-				  meals: result.data,
-				  scrapedAt: new Date()
-				});
+				// Create the new scraped data entry
+                const now = new Date();
+                const newEntry = {
+                    id: db.data.scrapedData.length + 1,
+                    restaurantId: restaurant.id,
+                    meals: result.data,
+                    scrapedAt: now,
+                    metadata: []
+                };
+
+                // Update the database in a single transaction
+                await db.update((state) => {
+                    state.scrapedData.push(newEntry);
+                    state.last_scrape = now;
+                    return state;
+                });
 
 				logger.info(
 					`[ScraperManager] Saved ${result.data.length} items from ${result.scraperName}`,

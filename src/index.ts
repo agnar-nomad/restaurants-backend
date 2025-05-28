@@ -2,14 +2,14 @@ import "dotenv/config";
 import { envConfig } from "@/config/env.js";
 import express from "express";
 import { db } from "@/db/index.js";
-import { scrapedDataTable } from "@/db/schema.js";
 import { logger } from "@/utils/logger.js";
-import { desc, eq } from "drizzle-orm";
+import type { ScrapedDataType } from "@/db/schema.js";
 
 // Initialize the database connection
 const initDb = async () => {
 	try {
-		await db.select();
+		await db.read();
+
 		logger.info("Database connection established");
 	} catch (error) {
 		logger.error("Database connection failed:", error);
@@ -31,29 +31,47 @@ async function bootstrap() {
 	// Get all restaurants with their latest scraped data
     // TODO add some basic Auth
 	app.get("/restaurants", async (_, res) => {
-		try {
-			const restaurants = await db.query.restaurantsTable.findMany();
+		try {   
+			await db.read();
+            const { restaurants, scrapedData, last_scrape } = db.data;
 
-			// For each restaurant, get the latest scraped data
-			const restaurantsWithData = await Promise.all(
-				restaurants.map(async (restaurant) => {
-					const latestData = await db.query.scrapedDataTable.findFirst({
-						where: eq(scrapedDataTable.restaurantId, restaurant.id),
-						orderBy: [desc(scrapedDataTable.scrapedAt)],
-					});
+			// Create a map of restaurant IDs to their latest scraped data
+			const latestScrapedData = new Map<number, ScrapedDataType>();
+			
+			// Sort scraped data by date in descending order and group by restaurantId
+			scrapedData
+				.sort((a, b) => new Date(b.scrapedAt).getTime() - new Date(a.scrapedAt).getTime())
+				.forEach(data => {
+					if (!latestScrapedData.has(data.restaurantId)) {
+						latestScrapedData.set(data.restaurantId, data);
+					}
+				});
 
-					return {
-						...restaurant,
-						latestData: latestData || null,
-					};
-				})
-			);
+			// Combine restaurants with their latest scraped data
+			const restaurantsWithData = restaurants.map(restaurant => ({
+				...restaurant,
+				latestData: latestScrapedData.get(restaurant.id) || null
+			}));
 
 			res.status(200).json(restaurantsWithData);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'Unknown error';
+            console.log("restaurants fetch error console", message)
 			logger.error('Failed to fetch restaurants:', message);
 			res.status(500).json({ error: 'Failed to fetch restaurants', details: message });
+		}
+	});
+
+    app.get("/dump", async (_, res) => {
+		try {   
+			await db.read();
+
+			res.status(200).json(db.data);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Unknown error';
+            console.log("dump error console", message)
+			logger.error('Failed to fetch dump:', message);
+			res.status(500).json({ error: 'Failed to fetch dump', details: message });
 		}
 	});
 

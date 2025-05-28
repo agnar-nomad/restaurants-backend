@@ -1,55 +1,13 @@
-import {
-	boolean,
-	integer,
-	jsonb,
-	pgTable,
-	serial,
-	text,
-	timestamp,
-	varchar,
-} from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-export const restaurantsTable = pgTable("restaurants", {
-	id: serial("id").primaryKey(),
-	name: varchar("name", { length: 255 }).notNull(),
-	url: varchar("url", { length: 1024 }).notNull(),
-	address: text("address").notNull(),
-	acceptsCards: boolean("accepts_cards"),
-	coordinates: jsonb("coordinates").$type<[number, number]>(),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Define the Meal type for TypeScript
-export type Meal = {
-	name: string;
-	price: number;
-	description?: string;
-	allergens?: string[];
-	is_vegan?: boolean;
-	is_gluten_free?: boolean;
-	is_soup?: boolean;
-};
-
-export const scrapedDataTable = pgTable("scraped_data", {
-	id: serial("id").primaryKey(),
-	restaurantId: integer("restaurant_id")
-		.references(() => restaurantsTable.id)
-		.notNull(),
-	meals: jsonb("meals").$type<Meal[]>(),
-	metadata: jsonb("metadata"),
-	scrapedAt: timestamp("scraped_at").defaultNow().notNull(),
-});
-
-// Schema for validation
 // Restaurant schema and types
 const restaurantSchema = {
 	name: z.string().min(1, "Name is required"),
+	key: z.nullable(z.string()),
 	url: z.string().url("Invalid URL").min(1, "URL is required"),
 	address: z.string().min(1, "Address is required"),
 	acceptsCards: z.boolean().optional(),
-	coordinates: z.tuple([z.number(), z.number()]).optional(),
+	coordinates: z.nullable(z.tuple([z.number(), z.number()])),
 };
 
 export const insertRestaurantSchema = z.object(restaurantSchema);
@@ -63,21 +21,24 @@ export const selectRestaurantSchema = z.object({
 export type Restaurant = z.infer<typeof selectRestaurantSchema>;
 export type NewRestaurant = z.infer<typeof insertRestaurantSchema>;
 
-// ScrapedData schema and types
+// Meal schema and types
 const mealSchema = z.object({
 	name: z.string().min(1, "Meal name is required"),
 	price: z.number().positive("Price must be a positive number"),
 	description: z.string().optional(),
-	alergens: z.array(z.string()).optional(),
+	allergens: z.array(z.string()).optional(),
 	is_vegan: z.boolean().optional(),
 	is_gluten_free: z.boolean().optional(),
 	is_soup: z.boolean().optional(),
 });
 
+export type Meal = z.infer<typeof mealSchema>;
+
+// ScrapedData schema and types
 const scrapedDataSchema = {
 	restaurantId: z.number().positive("Invalid restaurant ID"),
 	meals: z.array(mealSchema).min(1, "At least one meal is required"),
-	metadata: z.record(z.unknown()).optional(),
+	metadata: z.array(z.record(z.string(), z.string().or(z.number()))).optional(),
 };
 
 export const insertScrapedDataSchema = z.object(scrapedDataSchema);

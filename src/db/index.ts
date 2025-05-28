@@ -1,9 +1,19 @@
 import { envConfig } from "@/config/env.js";
-import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "./schema.js";
+import { JSONFilePreset } from "lowdb/node"
+import { restaurantsList } from "./restaurants_seed.js"
+import { Restaurant, ScrapedDataType } from "./schema.js";
 
-const db = drizzle(envConfig.DATABASE_URL, {
-	schema,
-});
+type Database = {
+    restaurants: Restaurant[]
+    scrapedData: ScrapedDataType[]
+    last_scrape?: Date | null
+}
 
-export { db };
+const defaultData: Database = {
+    restaurants: restaurantsList.slice(0,2),
+    scrapedData: [],
+    last_scrape: null
+}
+
+const fileName = envConfig.NODE_ENV === "production" ? "db.json" : "test-db.json"
+export const db = await JSONFilePreset<Database>(fileName, defaultData)
