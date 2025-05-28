@@ -7,6 +7,9 @@
 	"scripts": {
 		"build": "tsc && tsc-alias",
 		"dev": "tsx watch src/index.ts",
+        "playwright": "yarn playwright-chromium && yarn playwright-deps",
+		"playwright-chromium": "npx playwright install chromium",
+		"playwright-deps": "npx playwright install-deps",
 		"start": "node dist/index.js",
 		"scrape": "tsx src/bin/scrape.ts",
 		"scrape:concurrent": "tsx src/bin/scrape.ts --concurrent",
