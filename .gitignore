@@ -3,6 +3,10 @@ node_modules/
 .pnp
 .pnp.js
 
+# DB
+db.json
+test-db.json
+
 # Testing
 coverage/
 
