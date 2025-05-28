@@ -5,6 +5,7 @@ import { db } from "@/db/index.js";
 import { logger } from "@/utils/logger.js";
 import type { ScrapedDataType } from "@/db/schema.js";
 import { setupCronJobs } from "./cron.js";
+import { createScraperManager } from "./scrapers/index.js";
 
 // Initialize the database connection
 const initDb = async () => {
@@ -67,7 +68,6 @@ async function bootstrap() {
     // TODO removing old scrapeData entries
     // TODO cron
     // TODO if cron doesnt work, check if data is new enough, otherwise scrape
-    // TODO add an endpoint that runs a scrape manually
     app.get("/dump", async (_, res) => {
 		try {
 			await db.read();
@@ -78,6 +78,22 @@ async function bootstrap() {
             console.log("dump error console", message)
 			logger.error('Failed to fetch dump:', message);
 			res.status(500).json({ error: 'Failed to fetch dump', details: message });
+		}
+	});
+
+    app.get("/manual-scrape", async (_, res) => {
+		try {
+			const manager = createScraperManager();
+            await manager.runSequentially();
+
+			res.status(200).json({
+                success: true,
+                message: "Manual scrape completed successfully"
+            });
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Unknown error';
+			logger.error('Failed to manual scrape:', message);
+			res.status(500).json({ error: 'Failed to manual scrape', details: message });
 		}
 	});
 
