@@ -34,7 +34,7 @@ async function bootstrap() {
 	app.get("/restaurants", async (_, res) => {
 		try {   
 			await db.read();
-            const { restaurants, scrapedData, last_scrape } = db.data;
+            const { restaurants, scrapedData } = db.data;
 
 			// Create a map of restaurant IDs to their latest scraped data
 			const latestScrapedData = new Map<number, ScrapedDataType>();
@@ -67,6 +67,7 @@ async function bootstrap() {
     // TODO removing old scrapeData entries
     // TODO cron
     // TODO if cron doesnt work, check if data is new enough, otherwise scrape
+    // TODO add an endpoint that runs a scrape manually
     app.get("/dump", async (_, res) => {
 		try {
 			await db.read();
