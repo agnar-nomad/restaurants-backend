@@ -35,8 +35,7 @@ export async function scrapeThalie(): Promise<ScraperResult> {
         const html = await page.content();
         const $ = cheerio.load(html);
 
-        // let currentDayStr = getTodayDateCzechStr('DD.MM.YYYY') // TODO
-        let currentDayStr = "26.05.2025"
+        let currentDayStr = getTodayDateCzechStr('DD.MM.YYYY')
         let currentDayFound = false;
         let menuItems: Meal[] = [];
 
@@ -78,7 +77,9 @@ export async function scrapeThalie(): Promise<ScraperResult> {
                     allergens.push(match[0]);
                 }
 
-                const cleanName = soupCell.replace(/\s*\d+(?:\s*,\s*\d+)*\s*$/, '').trim();
+                const cleanName = soupCell
+                    .replace(/\s*\d+(?:\s*,\s*\d+)*\s*$/, '')
+                    .trim();
 
                 menuItems.push({
                     name: cleanName,
@@ -105,6 +106,7 @@ export async function scrapeThalie(): Promise<ScraperResult> {
 
                 // Clean the name by removing allergens and extra spaces
                 const cleanName = name
+                    .replace(/^\d+\.\s*/, '') // Remove leading number and dot with optional space
                     .replace(/\s*\d+(?:\s*,\s*\d+)*\s*$/, '') // Remove allergens at the end
                     .replace(/\s+/g, ' ') // Normalize spaces
                     .trim();

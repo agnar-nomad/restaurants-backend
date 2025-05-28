@@ -37,7 +37,7 @@ export const scrapedDataTable = pgTable("scraped_data", {
 	restaurantId: integer("restaurant_id")
 		.references(() => restaurantsTable.id)
 		.notNull(),
-	content: jsonb("content").$type<Meal[]>(),
+	meals: jsonb("meals").$type<Meal[]>(),
 	metadata: jsonb("metadata"),
 	scrapedAt: timestamp("scraped_at").defaultNow().notNull(),
 });
@@ -76,7 +76,7 @@ const mealSchema = z.object({
 
 const scrapedDataSchema = {
 	restaurantId: z.number().positive("Invalid restaurant ID"),
-	content: z.array(mealSchema).min(1, "At least one meal is required"),
+	meals: z.array(mealSchema).min(1, "At least one meal is required"),
 	metadata: z.record(z.unknown()).optional(),
 };
 

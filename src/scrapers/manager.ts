@@ -58,7 +58,7 @@ export class ScraperManager {
 			if (restaurant) {
 				await db.insert(scrapedDataTable).values({
 				  restaurantId: restaurant.id,
-				  content: result.data,
+				  meals: result.data,
 				  scrapedAt: new Date()
 				});
 

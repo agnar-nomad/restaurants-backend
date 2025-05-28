@@ -1,14 +1,18 @@
 import type { Meal } from "@/db/schema.js";
 
-export interface ScraperResult {
-	success: boolean;
-	data?: Meal[];
-	error?: string;
+export type ScraperResult = | {
+	success: true;
+	data: Meal[];
 	scraperName: string;
 	duration: number;
+} | {
+    success: false;
+    error: string;
+    scraperName: string;
+    duration: number;
 }
 
-export interface Scraper {
+export type Scraper = {
 	name: string;
 	scrape: () => Promise<ScraperResult>;
 }

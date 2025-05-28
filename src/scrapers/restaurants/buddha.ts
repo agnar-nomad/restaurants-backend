@@ -3,56 +3,152 @@ import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
 import { RESTAURANT_NAMES } from "../index.js";
+import { getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
+import type { Meal } from "@/db/schema.js";
+
 
 export async function scrapeBuddha(): Promise<ScraperResult> {
-	const startTime = Date.now();
-	const scraperName = RESTAURANT_NAMES.buddha;
-	const url = "https://www.menicka.cz/9564-buddha.html";
-	const browser = await chromium.launch({ headless: true });
+    const startTime = Date.now();
+    const scraperName = RESTAURANT_NAMES.buddha;
+    const url = "https://www.menicka.cz/9564-buddha.html";
+    const browser = await chromium.launch({ headless: true });
 
-	try {
-		logger.info(`[${scraperName}] Starting scraper...`);
-		const page = await browser.newPage();
-		await page.goto(url, {
-			waitUntil: "networkidle",
-			timeout: 30000,
-		});
+    try {
+        logger.info(`[${scraperName}] Starting scraper...`);
+        const page = await browser.newPage();
+        await page.goto(url, {
+            waitUntil: "networkidle",
+            timeout: 30000,
+        });
 
-		const html = await page.content();
-		const $ = cheerio.load(html);
+        const html = await page.content();
+        const $ = cheerio.load(html);
 
-		const menuItems = $(".obsah .menicka")
-			.map((_i, el) => ({
-				name: $(el).find(".nadpis").text().trim(),
-				//   price: parseFloat(
-				//     $(el).find('.item-price')
-				//       .text()
-				//       .replace('€', '')
-				//       .replace(',', '.')
-				//       .trim()
-				//   ),
-				//   description: $(el).find('.item-description').text().trim(),
-			}))
-			.get();
+        let currentDayStr = getTodayDateCzechStr('DD.M.YYYY')
+        let menuItems: Meal[] = [];
 
-			console.log("Buddha items: ", menuItems);
+        const todayMenu = $('.profile .obsah .menicka')
+            .filter((_, el) => {
+                const heading = $(el).find('.nadpis').text().trim();
+                return heading.includes(currentDayStr);
+            }).first();
 
-			return {
-				success: true,
-				data: menuItems as any, // TODO: fix type
-			scraperName,
-			duration: Date.now() - startTime,
-		};
-	} catch (error) {
-		const message = error instanceof Error ? error.message : "Unknown error";
-		logger.error(`[${scraperName}] Error:`, message);
-		return {
-			success: false,
-			error: message,
-			scraperName,
-			duration: Date.now() - startTime,
-		};
-	} finally {
-		await browser.close();
-	}
+        const soupRows = todayMenu.find('li.polevka')
+        soupRows.each((_, el) => {
+            const item = $(el)
+            const soupText = item.find('.polozka').text().trim();
+
+            // Extract all parenthetical groups
+            const parenthesesGroups = soupText.match(/\(([^)]+)\)/g) || [];
+            
+            let description = '';
+            let allergens: string[] = [];
+            
+            // Process the first group as description if it exists
+            if (parenthesesGroups.length > 0) {
+                description = parenthesesGroups[0]?.replace(/[()]/g, '').trim() || '';
+            }
+            
+            // Process the second group as allergens if it exists and contains only numbers
+            if (parenthesesGroups.length > 1) {
+                const potentialAllergens = parenthesesGroups[1]?.replace(/[()]/g, '').trim() || '';
+                if (/^\d+$/.test(potentialAllergens)) {
+                    allergens = potentialAllergens.split('').filter(a => a.trim() !== '');
+                }
+            }
+
+            const allergenFromEm = item.find('.polozka em').text().trim()
+            if(allergenFromEm) {
+                allergens.push(allergenFromEm)
+            }
+            
+            const cleanName = soupText
+                .replace(/^\d+,\s*\d*l\s*/, '') // Remove the leading quantity (e.g., "0, 2l ")
+                .replace(/\s*\([^)]+\)/g, '') // Remove all parenthetical content
+                .replace(/\s*\d+$/, '') // Remove any trailing numbers at the end
+                .replace(/\s+/g, ' ') // Normalize spaces
+                .trim();
+
+            const soupPrice = item.find('.cena')
+                .text()
+                .trim()
+                .replace(/\s+Kč/g, '');
+
+            menuItems.push({
+                name: cleanName,
+                price: parseInt(soupPrice) || 0,
+                description: description || undefined,
+                is_soup: true,
+                allergens,
+            })
+        })
+
+        const dishRows = todayMenu.find('li.jidlo')
+        dishRows.each((_, el) => {
+            const item = $(el)
+            const dishText = item.find('.polozka').text().trim();
+
+            // Extract all parenthetical groups
+            const parenthesesGroups = dishText.match(/\(([^)]+)\)/g) || [];
+            
+            let description = '';
+            let allergens: string[] = [];
+            
+            // Process the first group as description if it exists
+            if (parenthesesGroups.length > 0) {
+                description = parenthesesGroups[0]?.replace(/[()]/g, '').trim() || '';
+            }
+            
+            // Process the second group as allergens if it exists and contains only numbers
+            if (parenthesesGroups.length > 1) {
+                const potentialAllergens = parenthesesGroups[1]?.replace(/[()]/g, '').trim() || '';
+                if (/^\d+$/.test(potentialAllergens)) {
+                    allergens = potentialAllergens.split('').filter(a => a.trim() !== '');
+                }
+            }
+
+            const allergenFromEm = item.find('.polozka em').text().trim()
+            if(allergenFromEm) {
+                allergens.push(allergenFromEm)
+            }
+            
+            const cleanName = dishText
+                .replace(/\d+\.\s*/, '') // Remove number at the beginning e.g. 2.
+                .replace(/\d+g\s*/, '') // Remove weight info, e.g. 150g
+                .replace(/\s*\([^)]+\)/g, '') // Remove all parenthetical content
+                .replace(/\s*\d+$/, '') // Remove any trailing numbers at the end
+                .replace(/\s+/g, ' ') // Normalize spaces
+                .trim();
+
+            const dishPrice = item.find('.cena')
+                .text()
+                .trim()
+                .replace(/\s+Kč/g, '');
+
+            menuItems.push({
+                name: cleanName,
+                price: parseInt(dishPrice) || 0,
+                description: description || undefined,
+                is_soup: false,
+                allergens,
+            })
+        })
+
+        console.log("Buddha items: ", menuItems);
+
+        return {
+            success: true,
+            data: menuItems,
+            scraperName,
+            duration: Date.now() - startTime,
+        };
+    } catch (error) {
+        return getProcessedScraperError({
+            error,
+            scraperName,
+            startTime,
+        });
+    } finally {
+        await browser.close();
+    }
 }

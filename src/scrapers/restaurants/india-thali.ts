@@ -39,8 +39,7 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
         const html = await page.content();
         const $ = cheerio.load(html);
 
-        // let currentDayStr = getTodayDateCzechStr('DD. M.') // TODO
-        let currentDayStr = "23. 5."
+        let currentDayStr = getTodayDateCzechStr('DD. M.')
         let currentDayFound = false;
         let menuItems: Meal[] = [];
 
@@ -96,10 +95,13 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
                     
                     // 3. Extract allergens (A: or /A: followed by numbers, can be separated by , or +)
                     let allergens: string[] = [];
-                    const allergenMatch = cleanText.match(/[\/,]\s*A:\s*([\d+\s*,\s*]*\d+)/) || 
+                    const allergenMatch = cleanText.match(/\s*[\/,]?\s*A:\s*((?:\d+\s*[+,]\s*)*\d+)/) || 
                                         cleanText.match(/A:\s*([\d+\s*,\s*]*\d+)/);
                     if (allergenMatch) {
-                        allergens = (allergenMatch[1] || "").split(/\s*[,\+]\s*/).filter(a => a.trim() !== '').map(a => a.trim());
+                        allergens = (allergenMatch[1] || "")
+                            .split(/\s*[,\+]\s*/)
+                            .filter(a => a.trim() !== '')
+                            .map(a => a.trim());
                     }
                     
                     // 4. Extract description (text in first set of parentheses, clean allergens)
@@ -107,7 +109,7 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
                     const descriptionMatch = cleanText.match(/\(([^)]+)/);
                     if (descriptionMatch) {
                         description = (descriptionMatch[1] || "")
-                            .replace(/\s*[\/,]?\s*A:\s*[\d+\s*+,\s*]*\d+\+?\d*/g, '') // Remove allergen info with + or ,
+                            .replace(/\s*[\/,]?\s*A:\s*((?:\d+\s*[+,]\s*)*\d+)/g, '') // Remove allergen info with + or ,
                             .replace(/\s*[,\/]?\s*$/, '')  // Remove trailing commas/slashes
                             .trim();
                         }
