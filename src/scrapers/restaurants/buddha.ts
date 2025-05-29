@@ -1,6 +1,6 @@
 import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
-import { chromium } from "playwright";
+// import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
 import { getProcessedScraperError, getTodayDateCzechStr, fetchPageHtml } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
