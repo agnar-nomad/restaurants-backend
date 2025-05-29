@@ -20,7 +20,7 @@ export function getProcessedScraperError({
     startTime,
 }: GetProcessedScraperErrorType): ScraperResult {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.log("error", message, JSON.stringify(error, null, 2));
+    console.log("getProcessedScraperError error", message, JSON.stringify(error, null, 2));
     logger.error(`[${scraperKey}] Error:`, message);
     return {
         success: false,
@@ -38,14 +38,41 @@ export async function fetchPageHtml(url: string, options?: FetchPageHtmlOptions)
 
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-extensions',
+            '--disable-blink-features=AutomationControlled'  // Important for avoiding detection
+        ]
     });
 
     try {
         const page = await browser.newPage();
-        // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36');
+        await page.setViewport({ width: 1366, height: 768 });
         
-        // Navigate to the page and wait for network to be idle
+        await page.setExtraHTTPHeaders({
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9,cs;q=0.8',  // Added Czech language
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Sec-Ch-Ua': '"Chromium";v="136", "Not.A/Brand";v="24"',
+            'Sec-Ch-Ua-Platform': '"Linux"',
+            'Referer': 'https://www.google.com/',
+            // 'Sec-Fetch-Site': 'cross-site',
+        })
+
+        // Add a small delay before navigation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Navigate to the page and wait until [based on option specified]
         await page.goto(url, {
             waitUntil,
             timeout: 30000

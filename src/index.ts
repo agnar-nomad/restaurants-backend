@@ -1,6 +1,9 @@
 import "dotenv/config";
 import { envConfig } from "@/config/env.js";
 import express from "express";
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { db } from "@/db/index.js";
 import { logger } from "@/utils/logger.js";
 import type { ScrapedDataType } from "@/db/schema.js";
@@ -101,6 +104,45 @@ async function bootstrap() {
 			res.status(500).json({ error: 'Failed to manual scrape', details: message });
 		}
 	});
+
+    // Get the directory name in ES module
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    app.get("/dump-logs-all", async (_, res) => {
+        try {
+            const logPath = path.join(__dirname, '../logs/all.log');
+            const logContent = await fs.readFile(logPath, 'utf-8');
+            
+            res.setHeader('Content-Type', 'text/plain');
+            res.send(logContent);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            logger.error('Failed to read logs:', message);
+            res.status(500).json({ 
+                success: false,
+                error: 'Failed to read logs',
+                details: message 
+            });
+        }
+    })
+    app.get("/dump-logs-error", async (_, res) => {
+        try {
+            const logPath = path.join(__dirname, '../logs/error.log');
+            const logContent = await fs.readFile(logPath, 'utf-8');
+            
+            res.setHeader('Content-Type', 'text/plain');
+            res.send(logContent);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            logger.error('Failed to read logs:', message);
+            res.status(500).json({ 
+                success: false,
+                error: 'Failed to read logs',
+                details: message 
+            });
+        }
+    })
 
 	// 404 handler
 	app.use((_req, res) => {
