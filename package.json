@@ -10,6 +10,7 @@
 		"playwright": "yarn playwright-chromium && yarn playwright-deps",
 		"playwright-chromium": "npx playwright install chromium",
 		"playwright-deps": "npx playwright install-deps",
+        "puppeteer-install": "npx puppeteer browsers install chrome",
 		"start": "node dist/index.js",
 		"scrape": "tsx src/bin/scrape.ts",
 		"scrape:concurrent": "tsx src/bin/scrape.ts --concurrent",
