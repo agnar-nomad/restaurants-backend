@@ -2,7 +2,7 @@ import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
-import { getProcessedScraperError } from "../utils.js";
+import { fetchPageHtml, getProcessedScraperError } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
 import type { RestaurantKey } from "@/db/restaurants_seed.js";
 
@@ -20,17 +20,18 @@ export async function scrapePivniceNaRohu(): Promise<ScraperResult> {
     const startTime = Date.now();
     const scraperKey: RestaurantKey = "pivnice-na-rohu";
     const scrapeUrl = "https://www.pivnicenarohu.cz/kopie-poledn%C3%AD-menu";
-    const browser = await chromium.launch({ headless: true });
+    // const browser = await chromium.launch({ headless: true });
 
     try {
         logger.info(`[${scraperKey}] Starting scraper...`);
-        const page = await browser.newPage();
-        await page.goto(scrapeUrl, {
-            waitUntil: "domcontentloaded",
-            timeout: 30000,
-        });
+        // const page = await browser.newPage();
+        // await page.goto(scrapeUrl, {
+        //     waitUntil: "domcontentloaded",
+        //     timeout: 30000,
+        // });
 
-        const html = await page.content();
+        // const html = await page.content();
+        const html = await fetchPageHtml(scrapeUrl, {waitUntil: "domcontentloaded"});
         const $ = cheerio.load(html);
 
         // they only have one menu, available the whole week, so we just pick it up every day
@@ -95,6 +96,6 @@ export async function scrapePivniceNaRohu(): Promise<ScraperResult> {
             startTime,
         });
     } finally {
-        await browser.close();
+        // await browser.close();
     }
 }

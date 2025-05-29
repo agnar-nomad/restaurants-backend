@@ -2,7 +2,7 @@ import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
-import { getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
+import { fetchPageHtml, getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
 import { RestaurantKey } from "@/db/restaurants_seed.js";
 
@@ -11,17 +11,19 @@ export async function scrapeUTrechCertu(): Promise<ScraperResult> {
     const startTime = Date.now();
     const scraperKey: RestaurantKey = "u-trech-certu";
     const scrapeUrl = "https://www.menicka.cz/8401-u-trech-certu-dvorakova.html";
-    const browser = await chromium.launch({ headless: true });
+    // const browser = await chromium.launch({ headless: true });
 
     try {
         logger.info(`[${scraperKey}] Starting scraper...`);
-        const page = await browser.newPage();
-        await page.goto(scrapeUrl, {
-            waitUntil: "networkidle",
-            timeout: 30000,
-        });
+        // const page = await browser.newPage();
+        // await page.goto(scrapeUrl, {
+        //     waitUntil: "networkidle",
+        //     timeout: 30000,
+        // });
 
-        const html = await page.content();
+        // const html = await page.content();
+
+        const html = await fetchPageHtml(scrapeUrl);
         const $ = cheerio.load(html);
 
         let currentDayStr = getTodayDateCzechStr('DD.M.YYYY')
@@ -118,6 +120,6 @@ export async function scrapeUTrechCertu(): Promise<ScraperResult> {
             startTime,
         });
     } finally {
-        await browser.close();
+        // await browser.close();
     }
 }

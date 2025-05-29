@@ -2,7 +2,7 @@ import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
 import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
-import { getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
+import { fetchPageHtml, getProcessedScraperError, getTodayDateCzechStr } from "../utils.js";
 import type { Meal } from "@/db/schema.js";
 import type { RestaurantKey } from "@/db/restaurants_seed.js";
 
@@ -26,17 +26,19 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
     const startTime = Date.now();
     const scraperKey: RestaurantKey = "nepal-india-thali";
     const scrapeUrl = "https://www.indiathali.cz/";
-    const browser = await chromium.launch({ headless: true });
+    // const browser = await chromium.launch({ headless: true });
 
     try {
         logger.info(`[${scraperKey}] Starting scraper...`);
-        const page = await browser.newPage();
-        await page.goto(scrapeUrl, {
-            waitUntil: "networkidle",
-            timeout: 30000,
-        });
+        // const page = await browser.newPage();
+        // await page.goto(scrapeUrl, {
+        //     waitUntil: "networkidle",
+        //     timeout: 30000,
+        // });
 
-        const html = await page.content();
+        // const html = await page.content();
+
+        const html = await fetchPageHtml(scrapeUrl);
         const $ = cheerio.load(html);
 
         let currentDayStr = getTodayDateCzechStr('DD. M.')
@@ -163,6 +165,6 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
             startTime,
         });
     } finally {
-        await browser.close();
+        // await browser.close();
     }
 }
