@@ -84,12 +84,17 @@ async function bootstrap() {
     app.get("/manual-scrape", async (_, res) => {
 		try {
 			const manager = createScraperManager();
-            await manager.runSequentially();
+            const results = await manager.runSequentially();
 
-			res.status(200).json({
-                success: true,
-                message: "Manual scrape completed successfully"
-            });
+            if(results.every(r => r.success)) {
+                res.status(200).json({
+                    success: true,
+                    message: "Manual scrape completed successfully"
+                });
+            } else {
+                const failedScrapers = results.filter(r => !r.success).map(r => r.scraperKey);
+                throw new Error(`Manual scrape failed for these scrapers: ${failedScrapers.join(", ")}`);
+            }
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'Unknown error';
 			logger.error('Failed to manual scrape:', message);

@@ -20,6 +20,7 @@ export function getProcessedScraperError({
     startTime,
 }: GetProcessedScraperErrorType): ScraperResult {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.log("error", message, JSON.stringify(error, null, 2));
     logger.error(`[${scraperKey}] Error:`, message);
     return {
         success: false,
