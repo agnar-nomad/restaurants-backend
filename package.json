@@ -10,10 +10,11 @@
 		"playwright": "yarn playwright-chromium && yarn playwright-deps",
 		"playwright-chromium": "npx playwright install chromium",
 		"playwright-deps": "npx playwright install-deps",
-        "puppeteer-install": "npx puppeteer browsers install chrome",
+		"puppeteer-install": "npx puppeteer browsers install chrome",
 		"start": "node dist/index.js",
 		"scrape": "tsx src/bin/scrape.ts",
 		"scrape:concurrent": "tsx src/bin/scrape.ts --concurrent",
+		"scrape-prod": "node dist/bin/scrape.js",
 		"migrate:generate": "drizzle-kit generate:pg",
 		"migrate:push": "drizzle-kit push:pg",
 		"migrate:up": "drizzle-kit up:pg",
@@ -22,12 +23,7 @@
 		"format": "biome format --write .",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"keywords": [
-		"scraper",
-		"restaurants",
-		"menu",
-		"typescript"
-	],
+	"keywords": ["scraper", "restaurants", "menu", "typescript"],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {

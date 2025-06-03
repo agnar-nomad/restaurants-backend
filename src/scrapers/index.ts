@@ -5,19 +5,18 @@ import { scrapeIndiaThali } from "./restaurants/india-thali.js";
 import { scrapePivniceNaRohu } from "./restaurants/pivnice-na-rohu.js";
 import { scrapeUTrechCertu } from "./restaurants/u-trech-certu.js";
 
-
 export function createScraperManager() {
 	// Add more scrapers here as they are created
 	return new ScraperManager()
-		.register({ name: "buddha", scrape: scrapeBuddha })
 		.register({ name: "thalie", scrape: scrapeThalie })
-		.register({
-			name: "nepal-india-thali",
-			scrape: scrapeIndiaThali,
-		})
 		.register({
 			name: "pivnice-na-rohu",
 			scrape: scrapePivniceNaRohu,
+		})
+		.register({ name: "buddha", scrape: scrapeBuddha })
+		.register({
+			name: "nepal-india-thali",
+			scrape: scrapeIndiaThali,
 		})
 		.register({
 			name: "u-trech-certu",

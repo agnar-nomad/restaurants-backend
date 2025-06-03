@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import 'dotenv/config'; 
+import "dotenv/config";
 import { createScraperManager } from "../scrapers/index.js";
 
 async function main() {

@@ -17,85 +17,91 @@ import type { RestaurantKey } from "@/db/restaurants_seed.js";
 // </random div with random class id>
 
 export async function scrapePivniceNaRohu(): Promise<ScraperResult> {
-    const startTime = Date.now();
-    const scraperKey: RestaurantKey = "pivnice-na-rohu";
-    const scrapeUrl = "https://www.pivnicenarohu.cz/kopie-poledn%C3%AD-menu";
-    // const browser = await chromium.launch({ headless: true });
+	const startTime = Date.now();
+	const scraperKey: RestaurantKey = "pivnice-na-rohu";
+	const scrapeUrl = "https://www.pivnicenarohu.cz/kopie-poledn%C3%AD-menu";
+	// const browser = await chromium.launch({ headless: true });
 
-    try {
-        logger.info(`[${scraperKey}] Starting scraper...`);
-        // const page = await browser.newPage();
-        // await page.goto(scrapeUrl, {
-        //     waitUntil: "domcontentloaded",
-        //     timeout: 30000,
-        // });
+	try {
+		logger.info(`[${scraperKey}] Starting scraper...`);
+		// const page = await browser.newPage();
+		// await page.goto(scrapeUrl, {
+		//     waitUntil: "domcontentloaded",
+		//     timeout: 30000,
+		// });
 
-        // const html = await page.content();
-        const html = await fetchPageHtml(scrapeUrl, {waitUntil: "domcontentloaded"});
-        const $ = cheerio.load(html);
+		// const html = await page.content();
+		const html = await fetchPageHtml(scrapeUrl, {
+			waitUntil: "domcontentloaded",
+		});
+		const $ = cheerio.load(html);
 
-        // they only have one menu, available the whole week, so we just pick it up every day
-        let menuItems: Meal[] = [];
+		// they only have one menu, available the whole week, so we just pick it up every day
+		let menuItems: Meal[] = [];
 
-        // Find the paragraph containing soup indicators
-        const soupParagraph = $('div[data-testid="mesh-container-content"] div p:contains("P1:")').first();
-        if (!soupParagraph.length) {
-            throw new Error("Could not find soup items on the page");
-        }
+		// Find the paragraph containing soup indicators
+		const soupParagraph = $(
+			'div[data-testid="mesh-container-content"] div p:contains("P1:")',
+		).first();
+		if (!soupParagraph.length) {
+			throw new Error("Could not find soup items on the page");
+		}
 
-        // Get the sibling paragraph which contains the main dishes
-        const mainDishesParagraph = soupParagraph.next('p');
-        if (!mainDishesParagraph.length) {
-            throw new Error("Could not find main dishes on the page");
-        }
+		// Get the sibling paragraph which contains the main dishes
+		const mainDishesParagraph = soupParagraph.next("p");
+		if (!mainDishesParagraph.length) {
+			throw new Error("Could not find main dishes on the page");
+		}
 
-        // Process soups
-        const soupsText = soupParagraph.text();
-        const soups = soupsText.split('\n')
-            .filter(line => line.trim().startsWith('P'))
-            .map(soup => soup.replace(/^P\d+:\s*/, '').trim());
+		// Process soups
+		const soupsText = soupParagraph.text();
+		const soups = soupsText
+			.split("\n")
+			.filter((line) => line.trim().startsWith("P"))
+			.map((soup) => soup.replace(/^P\d+:\s*/, "").trim());
 
-        // Add soups to menuItems
-        soups.forEach(soup => {
-            menuItems.push({
-                name: soup,
-                price: 20, // mentioned on the page
-                is_soup: true,
-                allergens: undefined
-            });
-        });
+		// Add soups to menuItems
+		soups.forEach((soup) => {
+			menuItems.push({
+				name: soup,
+				price: 20, // mentioned on the page
+				is_soup: true,
+				allergens: undefined,
+			});
+		});
 
-        // Process main dishes
-        const dishesText = mainDishesParagraph.text();
-        const dishLines = dishesText.split('\n')
-            .filter(line => /^\d+\.\s/.test(line.trim())); // starts with NUM.
+		// Process main dishes
+		const dishesText = mainDishesParagraph.text();
+		const dishLines = dishesText
+			.split("\n")
+			.filter((line) => /^\d+\.\s/.test(line.trim())); // starts with NUM.
 
-        dishLines.forEach(dish => {
-            const cleanName = dish.replace(/^\d+\.\s*/, '').trim();
+		dishLines.forEach((dish) => {
+			const cleanName = dish.replace(/^\d+\.\s*/, "").trim();
 
-            menuItems.push({
-                name: cleanName,
-                price: 159, // mentioned on the page
-                is_soup: false,
-                allergens: undefined
-            });
-        });
+			menuItems.push({
+				name: cleanName,
+				price: 159, // mentioned on the page
+				is_soup: false,
+				allergens: undefined,
+			});
+		});
 
-        console.log("Pivnice na Rohu items: ", menuItems);
+		console.log("Pivnice na Rohu items: ", menuItems);
 
-        return {
-            success: true,
-            data: menuItems,
-            scraperKey,
-            duration: Date.now() - startTime,
-        };
-    } catch (error) {
-        return getProcessedScraperError({
-            error,
-            scraperKey,
-            startTime,
-        });
-    } finally {
-        // await browser.close();
-    }
+		return {
+			success: true,
+			data: menuItems,
+			scraperKey,
+			duration: Date.now() - startTime,
+		};
+	} catch (error) {
+		return getProcessedScraperError({
+			error,
+			scraperKey,
+			startTime,
+		});
+	} finally {
+		// await browser.close();
+	}
 }

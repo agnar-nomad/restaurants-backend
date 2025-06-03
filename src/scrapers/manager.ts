@@ -16,18 +16,18 @@ export class ScraperManager {
 		for (const scraper of this.scrapers) {
 			logger.info(`[ScraperManager] Running ${scraper.name}...`);
 			const result = await scraper.scrape();
-			
-            const saveSuccess = await this.saveResult(result);
-            if(saveSuccess) {
-                results.push(result);
-            } else {
-                results.push({
-                    error: "Failed to save result",
-                    scraperKey: result.scraperKey,
-                    success: false,
-                    duration: result.duration,
-                })
-            }
+
+			const saveSuccess = await this.saveResult(result);
+			if (saveSuccess) {
+				results.push(result);
+			} else {
+				results.push({
+					error: "Failed to save result",
+					scraperKey: result.scraperKey,
+					success: false,
+					duration: result.duration,
+				});
+			}
 		}
 
 		return results;
@@ -58,34 +58,36 @@ export class ScraperManager {
 		}
 
 		try {
-            logger.info("Saving result:", JSON.stringify(result, null ,2));
-            await db.read();
-            const restaurant = db.data.restaurants.find((r) => r.key === result.scraperKey)
+			logger.info("Saving result:", JSON.stringify(result, null, 2));
+			await db.read();
+			const restaurant = db.data.restaurants.find(
+				(r) => r.key === result.scraperKey,
+			);
 
 			if (restaurant) {
 				// Create the new scraped data entry
-                const now = new Date();
-                const newEntry = {
-                    id: db.data.scrapedData.length + 1,
-                    restaurantId: restaurant.id,
-                    meals: result.data,
-                    scrapedAt: now,
-                    metadata: []
-                };
+				const now = new Date();
+				const newEntry = {
+					id: db.data.scrapedData.length + 1,
+					restaurantId: restaurant.id,
+					meals: result.data,
+					scrapedAt: now,
+					metadata: [],
+				};
 
-                // Update the database in a single transaction
-                await db.update((state) => {
-                    state.scrapedData.push(newEntry);
-                    state.last_scrape = now;
-                    return state;
-                });
+				// Update the database in a single transaction
+				await db.update((state) => {
+					state.scrapedData.push(newEntry);
+					state.last_scrape = now;
+					return state;
+				});
 
 				logger.info(
 					`[ScraperManager] Saved ${result.data.length} items from ${result.scraperKey}`,
 				);
 			}
 
-            return true;
+			return true;
 		} catch (error) {
 			if (error instanceof Error) {
 				logger.error(
@@ -98,7 +100,7 @@ export class ScraperManager {
 				);
 			}
 
-            return false
+			return false;
 		}
 	}
 }

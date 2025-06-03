@@ -1567,7 +1567,7 @@ puppeteer-core@24.9.0:
     typed-query-selector "^2.12.0"
     ws "^8.18.2"
 
-puppeteer@^24.9.0:
+puppeteer@~24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-24.9.0.tgz#1d3f805e0170ca481b637a47c71a09b815594dae"
   integrity sha512-L0pOtALIx8rgDt24Y+COm8X52v78gNtBOW6EmUcEPci0TYD72SAuaXKqasRIx4JXxmg2Tkw5ySKcpPOwN8xXnQ==

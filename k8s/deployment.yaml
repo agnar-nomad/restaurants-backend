@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurants-backend
+  namespace: restaurants
+  labels:
+    app: restaurants-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restaurants-backend
+  template:
+    metadata:
+      labels:
+        app: restaurants-backend
+    spec:
+      containers:
+      - name: restaurants-backend
+        image: your-docker-username/restaurants-backend:latest  # Update with your image
+        ports:
+        - containerPort: 4242
+        imagePullPolicy: Always
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "4242"
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4242
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4242
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: restaurants-data
