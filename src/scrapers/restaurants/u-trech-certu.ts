@@ -29,7 +29,7 @@ export async function scrapeUTrechCertu(): Promise<ScraperResult> {
 		const html = await fetchPageHtml(scrapeUrl);
 		const $ = cheerio.load(html);
 
-		let currentDayStr = getTodayDateCzechStr("DD.M.YYYY");
+		let currentDayStr = getTodayDateCzechStr("D.M.YYYY");
 		let menuItems: Meal[] = [];
 
 		const todayMenu = $(".profile .obsah .menicka")

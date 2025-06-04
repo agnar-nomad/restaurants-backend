@@ -15,9 +15,9 @@ const initDb = async () => {
 	try {
 		await db.read();
 
-		logger.info("Database connection established");
+		logger.info("Database connection established.");
 	} catch (error) {
-		logger.error("Database connection failed:", error);
+		logger.error("Database connection failed.", error);
 		process.exit(1);
 	}
 };
@@ -34,7 +34,7 @@ async function bootstrap() {
 	});
 
 	// TODO try k8s????? !! ???
-	// TODO manager.runsequentially
+	// TODO manager.runsequentially consolidate
 	// TODO menicka.cz wait until domcontentloaded, try on server if faster
 	// TODO run the scraper 5s after server spins up and scrapedData is empty
 	// TODO
@@ -75,8 +75,7 @@ async function bootstrap() {
 			res.status(200).json(restaurantsWithData);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
-			console.log("restaurants fetch error console", message);
-			logger.error("Failed to fetch restaurants:", message);
+			logger.error(`Failed to fetch restaurants: ${message}`, error);
 			res
 				.status(500)
 				.json({ error: "Failed to fetch restaurants", details: message });
@@ -90,8 +89,7 @@ async function bootstrap() {
 			res.status(200).json(db.data);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
-			console.log("dump error console", message);
-			logger.error("Failed to fetch dump:", message);
+			logger.error(`Failed to fetch dump: ${message}`, error);
 			res.status(500).json({ error: "Failed to fetch dump", details: message });
 		}
 	});
@@ -116,7 +114,7 @@ async function bootstrap() {
 			}
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
-			logger.error("Failed to manual scrape:", message);
+			logger.error(`Failed to manual scrape: ${message}`, error);
 			res
 				.status(500)
 				.json({ error: "Failed to manual scrape", details: message });
@@ -136,7 +134,7 @@ async function bootstrap() {
 			res.send(logContent);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
-			logger.error("Failed to read logs:", message);
+			logger.error(`Failed to read logs: ${message}`, error);
 			res.status(500).json({
 				success: false,
 				error: "Failed to read logs",
@@ -153,7 +151,7 @@ async function bootstrap() {
 			res.send(logContent);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Unknown error";
-			logger.error("Failed to read logs:", message);
+			logger.error(`Failed to read logs: ${message}`, error);
 			res.status(500).json({
 				success: false,
 				error: "Failed to read logs",
@@ -200,6 +198,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-	logger.error("Failed to start server:", error);
+	logger.error("Failed to start server.", error);
 	process.exit(1);
 });

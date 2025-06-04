@@ -45,7 +45,7 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
 		const html = await fetchPageHtml(scrapeUrl);
 		const $ = cheerio.load(html);
 
-		let currentDayStr = getTodayDateCzechStr("DD. M.");
+		let currentDayStr = getTodayDateCzechStr("D. M.");
 		let currentDayFound = false;
 		let menuItems: Meal[] = [];
 

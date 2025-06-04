@@ -15,13 +15,13 @@ export function createScraperManager() {
 		})
 		.register({ name: "buddha", scrape: scrapeBuddha })
 		.register({
-			name: "nepal-india-thali",
-			scrape: scrapeIndiaThali,
-		})
-		.register({
-			name: "u-trech-certu",
+            name: "u-trech-certu",
 			scrape: scrapeUTrechCertu,
-		});
+		})
+        .register({
+            name: "nepal-india-thali",
+            scrape: scrapeIndiaThali,
+        });
 }
 
 export * from "./manager.js";

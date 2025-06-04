@@ -36,6 +36,13 @@ async function runScheduledScrape(time: string) {
 		await manager.runSequentially();
 		logger.info(`[Cron] Scheduled scrape at ${time} completed successfully`);
 	} catch (error) {
-		logger.error(`[Cron] Error during scheduled scrape at ${time}:`, error);
+		logger.error(
+			`[Cron] Error during scheduled scrape at ${time}: ${JSON.stringify(
+				error,
+				null,
+				2,
+			)}`,
+			error,
+		);
 	}
 }

@@ -58,7 +58,7 @@ export class ScraperManager {
 		}
 
 		try {
-			logger.info("Saving result:", JSON.stringify(result, null, 2));
+			logger.info(`Saving result: ${JSON.stringify(result, null, 2)}`);
 			await db.read();
 			const restaurant = db.data.restaurants.find(
 				(r) => r.key === result.scraperKey,
@@ -91,12 +91,13 @@ export class ScraperManager {
 		} catch (error) {
 			if (error instanceof Error) {
 				logger.error(
-					`[ScraperManager] Error saving ${result.scraperKey} data:`,
-					error.message,
+					`[ScraperManager] Error saving ${result.scraperKey} data: ${error.message}`,
+					error,
 				);
 			} else {
 				logger.error(
 					`[ScraperManager] Unknown error saving ${result.scraperKey} data`,
+					error,
 				);
 			}
 

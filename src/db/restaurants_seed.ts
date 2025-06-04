@@ -66,7 +66,7 @@ const dataSchema = z.array(selectRestaurantSchema);
 function parseRestaurantsData() {
 	const result = dataSchema.safeParse(restaurantsData);
 	if (!result.success) {
-		logger.error("Error parsing restaurants data:", result.error);
+		logger.error(`Error parsing restaurants data: ${JSON.stringify(result.error)}`);
 		return [];
 	}
 	return result.data;
