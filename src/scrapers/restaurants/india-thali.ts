@@ -1,6 +1,5 @@
 import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
-// import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
 import {
 	fetchPageHtml,
@@ -30,17 +29,9 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
 	const startTime = Date.now();
 	const scraperKey: RestaurantKey = "nepal-india-thali";
 	const scrapeUrl = "https://www.indiathali.cz/";
-	// const browser = await chromium.launch({ headless: true });
 
 	try {
 		logger.info(`[${scraperKey}] Starting scraper...`);
-		// const page = await browser.newPage();
-		// await page.goto(scrapeUrl, {
-		//     waitUntil: "networkidle",
-		//     timeout: 30000,
-		// });
-
-		// const html = await page.content();
 
 		const html = await fetchPageHtml(scrapeUrl);
 		const $ = cheerio.load(html);
@@ -173,7 +164,5 @@ export async function scrapeIndiaThali(): Promise<ScraperResult> {
 			scraperKey,
 			startTime,
 		});
-	} finally {
-		// await browser.close();
-	}
+    }
 }

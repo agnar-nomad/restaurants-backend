@@ -3,6 +3,7 @@ import { ScraperResult } from "./types.js";
 import dayjs from "dayjs";
 import { RestaurantKey } from "@/db/restaurants_seed.js";
 import puppeteer from "puppeteer";
+import { chromium } from "playwright";
 
 export function getTodayDateCzechStr(format?: string): string {
 	// For current date with leading zeros or custom format
@@ -30,51 +31,53 @@ export function getProcessedScraperError({
 }
 
 type FetchPageHtmlOptions = {
-	waitUntil: puppeteer.GoToOptions["waitUntil"];
+	waitUntil: "load" | "domcontentloaded" | "networkidle" | "commit";
+	// waitUntil: puppeteer.GoToOptions["waitUntil"];
 };
 export async function fetchPageHtml(
 	url: string,
 	options?: FetchPageHtmlOptions,
 ): Promise<string> {
-	const waitUntil = options?.waitUntil || "networkidle2";
+	const waitUntil = options?.waitUntil || "networkidle";
 
-	const browser = await puppeteer.launch({
+	// const browser = await puppeteer.launch({
+	const browser = await chromium.launch({
 		headless: true,
-		args: [
-			"--no-sandbox",
-			"--disable-setuid-sandbox",
-			"--single-process",
-			"--disable-gpu",
-			"--disable-extensions",
-			"--disable-blink-features=AutomationControlled", // Important for avoiding detection
-		],
+		// args: [
+		// 	"--no-sandbox",
+		// 	"--disable-setuid-sandbox",
+		// 	"--single-process",
+		// 	"--disable-gpu",
+		// 	"--disable-extensions",
+		// 	"--disable-blink-features=AutomationControlled", // Important for avoiding detection
+		// ],
 	});
 
-	console.log("browser launched", browser);
+	console.log("browser launched");
 
 	try {
 		const page = await browser.newPage();
-		await page.setUserAgent(
-			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-		);
-		await page.setViewport({ width: 1366, height: 768 });
+		// await page.setUserAgent(
+		// 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+		// );
+		// await page.setViewport({ width: 1366, height: 768 });
 
-		await page.setExtraHTTPHeaders({
-			Accept:
-				"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-			"Accept-Language": "en-US,en;q=0.9,cs;q=0.8", // Added Czech language
-			"Accept-Encoding": "gzip, deflate, br",
-			Connection: "keep-alive",
-			"Upgrade-Insecure-Requests": "1",
-			"Sec-Fetch-Dest": "document",
-			"Sec-Fetch-Mode": "navigate",
-			"Sec-Fetch-Site": "none",
-			"Sec-Fetch-User": "?1",
-			"Sec-Ch-Ua": '"Chromium";v="136", "Not.A/Brand";v="24"',
-			"Sec-Ch-Ua-Platform": '"Linux"',
-			Referer: "https://www.google.com/",
+		// await page.setExtraHTTPHeaders({
+			// Accept:
+			// 	"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+			// "Accept-Language": "en-US,en;q=0.9,cs;q=0.8", // Added Czech language
+			// "Accept-Encoding": "gzip, deflate, br",
+			// Connection: "keep-alive",
+			// "Upgrade-Insecure-Requests": "1",
+			// "Sec-Fetch-Dest": "document",
+			// "Sec-Fetch-Mode": "navigate",
+			// "Sec-Fetch-Site": "none",
+			// "Sec-Fetch-User": "?1",
+			// "Sec-Ch-Ua": '"Chromium";v="136", "Not.A/Brand";v="24"',
+			// "Sec-Ch-Ua-Platform": '"Linux"',
+			// Referer: "https://www.google.com/",
 			// 'Sec-Fetch-Site': 'cross-site',
-		});
+		// });
 		console.log("page set up");
 
 		// Add a small delay before navigation
@@ -96,7 +99,7 @@ export async function fetchPageHtml(
 
 		return html;
 	} catch (e) {
-		throw new Error(`Error fetching page html: ${url} - ${e}`);
+		throw new Error(`Error fetching page html: ${url} - ${JSON.stringify(e)}`);
 	} finally {
 		await browser.close();
 	}

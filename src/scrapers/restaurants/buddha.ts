@@ -1,6 +1,5 @@
 import { logger } from "@/utils/logger.js";
 import * as cheerio from "cheerio";
-// import { chromium } from "playwright";
 import type { ScraperResult } from "../types.js";
 import {
 	getProcessedScraperError,
@@ -14,17 +13,9 @@ export async function scrapeBuddha(): Promise<ScraperResult> {
 	const startTime = Date.now();
 	const scraperKey: RestaurantKey = "buddha";
 	const scrapeUrl = "https://www.menicka.cz/9564-buddha.html";
-	// const browser = await chromium.launch({ headless: true });
 
 	try {
 		logger.info(`[${scraperKey}] Starting scraper...`);
-		// const page = await browser.newPage();
-		// await page.goto(scrapeUrl, {
-		//     waitUntil: "networkidle",
-		//     timeout: 30000,
-		// });
-
-		// const html = await page.content();
 
 		const html = await fetchPageHtml(scrapeUrl);
 		const $ = cheerio.load(html);
@@ -41,7 +32,6 @@ export async function scrapeBuddha(): Promise<ScraperResult> {
 
 		const soupRows = todayMenu.find("li.polevka");
 
-        console.log( todayMenu.text());
 		soupRows.each((_, el) => {
 			const item = $(el);
 			const soupText = item.find(".polozka").text().trim();
@@ -92,7 +82,6 @@ export async function scrapeBuddha(): Promise<ScraperResult> {
 		});
 
 		const dishRows = todayMenu.find("li.jidlo");
-        console.log("dishRows: ", dishRows.text(), todayMenu.text());
 		dishRows.each((_, el) => {
 			const item = $(el);
 			const dishText = item.find(".polozka").text().trim();
@@ -157,7 +146,5 @@ export async function scrapeBuddha(): Promise<ScraperResult> {
 			scraperKey,
 			startTime,
 		});
-	} finally {
-		// await browser.close();
 	}
 }
