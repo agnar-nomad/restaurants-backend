@@ -3,7 +3,7 @@ set -e
 
 # Set your Docker username
 DOCKER_USERNAME="dr.pnkt.dev/bf"
-IMAGE_NAME="restaurants-backend"
+IMAGE_NAME="restaurants-backend-test"
 TAG="latest"
 
 # Authenticate with Docker Hub (uncomment if needed)
@@ -18,7 +18,6 @@ docker push $DOCKER_USERNAME/$IMAGE_NAME:$TAG
 
 # Apply Kubernetes configurations
 echo "Applying Kubernetes configurations..."
-kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/pvc.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml

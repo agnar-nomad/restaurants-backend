@@ -3,6 +3,9 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Install Python and build dependencies for node-gyp
+RUN apk add --no-cache python3 make g++
+
 # Copy package files and install dependencies
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
@@ -13,47 +16,37 @@ COPY . .
 # Build the application
 RUN yarn build
 
-# Production stage
-FROM node:18-alpine
+# Production stage - Using Playwright's base image
+FROM mcr.microsoft.com/playwright:v1.50.0-jammy
 
-# Install runtime dependencies
-RUN apk add --no-cache \
-    chromium \
-    nano \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    udev \
-    ttf-opensans \
-    dbus \
-    xvfb \
-    procps \
-    xorg-server
+# Install Node.js 18
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=4242
-
-WORKDIR /app
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # Copy package files and install production dependencies
 COPY package.json yarn.lock ./
 RUN yarn install --production --frozen-lockfile
+
+# Install only Chrome browser
+RUN npx playwright install --with-deps chromium
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
 # Copy configuration files
 COPY --from=builder /app/package.json ./
-COPY --from=builder /app/.puppeteerrc.cjs ./
 
 # Create data directory
 RUN mkdir -p /app/data
-
-# Install Puppeteer
-RUN yarn puppeteer-install
 
 # Expose the application port
 EXPOSE 4242

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: restaurants-data
-  namespace: restaurants
+  namespace: bf
 spec:
   accessModes:
     - ReadWriteOnce

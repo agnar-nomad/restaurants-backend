@@ -2,7 +2,7 @@ import { logger } from "@/utils/logger.js";
 import { ScraperResult } from "./types.js";
 import dayjs from "dayjs";
 import { RestaurantKey } from "@/db/restaurants_seed.js";
-import puppeteer from "puppeteer";
+// import puppeteer from "puppeteer";
 import { chromium } from "playwright";
 
 export function getTodayDateCzechStr(format?: string): string {

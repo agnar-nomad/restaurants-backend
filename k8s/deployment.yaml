@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: restaurants-backend
-  namespace: restaurants
+  namespace: bf
   labels:
     app: restaurants-backend
 spec:

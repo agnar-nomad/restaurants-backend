@@ -58,7 +58,12 @@ export class ScraperManager {
 		}
 
 		try {
-			logger.info(`Saving result: ${JSON.stringify(result, null, 2)}`);
+			logger.info(
+				`Saving result: ${result.scraperKey}; success: ${String(
+					result.success,
+				)}, took: ${result.duration}ms`,
+				result,
+			);
 			await db.read();
 			const restaurant = db.data.restaurants.find(
 				(r) => r.key === result.scraperKey,
