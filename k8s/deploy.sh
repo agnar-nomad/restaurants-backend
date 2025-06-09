@@ -18,8 +18,8 @@ docker push $DOCKER_USERNAME/$IMAGE_NAME:$TAG
 
 # Apply Kubernetes configurations
 echo "Applying Kubernetes configurations..."
-kubectl apply -f k8s/pvc.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/pvc.yaml
 
 echo "Deployment complete!"

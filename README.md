@@ -1,153 +1,104 @@
-# Restaurant Menu Scraper
+# Restaurant Menu Scraper API
 
-A configurable web scraper for extracting restaurant menu data from various websites using Playwright and Cheerio.
-
-<!-- TODO -->
-Restaurants must be added to the db manually, there is no UI for it now and the scripts dont check whether the scraped restaurant is already in the db. So it will not find a restaurant when saving its result to scrapedData table.
-<!-- TODO -->
+A robust web scraper and API service for extracting and serving restaurant menu data from various websites. Built with TypeScript, Express, and Playwright.
 
 ## Features
 
-- Configurable scraping targets with CSS selectors
-- Support for both static and dynamic content (Cheerio + Playwright)
-- Sequential and concurrent scraping modes
-- PostgreSQL storage with Drizzle ORM
-- Type-safe codebase with TypeScript
-- Logging and error handling
-- Command-line interface for running scrapers
+- 🚀 RESTful API for accessing scraped menu data
+- ⚡ Support for both static and dynamic content (Cheerio + Playwright)
+- 🔄 Scheduled scraping with node-cron
+- 📦 Type-safe codebase with TypeScript
+- 📝 Comprehensive logging with Winston
+- 🐳 Docker and Kubernetes ready
+- 🔍 Multiple scraping strategies (sequential and concurrent)
 
 ## Prerequisites
 
 - Node.js 18+
-- PostgreSQL 14+
 - Yarn
+- Playwright (installed automatically with dependencies)
+- Docker (optional, for containerized deployment)
+- Kubernetes (optional, for orchestration)
 
-## Setup
+## Getting Started
 
-1. Clone the repository
-2. Install dependencies:
+### Installation
+
+Install dependencies:
    ```bash
    yarn install
    ```
-3. Copy `.env.example` to `.env` and update the values:
+
+Set up environment variables:
    ```bash
    cp .env.example .env
    ```
-4. Update the database connection string in `.env`
-5. Run database migrations:
-   ```bash
-   yarn migrate:push
-   ```
+   Update the `.env` file with your configuration.
 
-## Development
+### Development
 
-- Start development server:
+- Start development server with hot-reload:
   ```bash
   yarn dev
   ```
-- Build for production:
+
+- Run the scraper:
   ```bash
-  yarn build
+  yarn scrape
   ```
-- Start production server:
-  ```bash
-  yarn start
-  ```
-
-## Running Scrapers
-
-### Run all scrapers sequentially:
-```bash
-yarn scrape
-```
-
-### Run all scrapers concurrently:
-```bash
-yarn scrape:concurrent
-```
-
-### Add a new scraper:
-1. Create a new file in `src/scrapers/restaurants/` (e.g., `restaurant2.ts`)
-2. Implement a scraper function that returns a `Promise<ScraperResult>`
-3. Import and register it in `src/scrapers/index.ts`
-
-Example scraper implementation:
-
-```typescript
-// src/scrapers/restaurants/example.ts
-import { chromium } from 'playwright';
-import * as cheerio from 'cheerio';
-import { logger } from '@/utils/logger';
-import type { ScraperResult } from '../types';
-
-export async function scrapeExample(): Promise<ScraperResult> {
-  const startTime = Date.now();
-  const scraperName = 'Example';
-  const browser = await chromium.launch({ headless: true });
   
-  try {
-    // Scraping implementation
-    return {
-      success: true,
-      data: [], // Your scraped data
-      scraperName,
-      duration: Date.now() - startTime
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return {
-      success: false,
-      error: message,
-      scraperName,
-      duration: Date.now() - startTime
-    };
-  } finally {
-    await browser.close();
-  }
-}
-```
+  For concurrent scraping (faster but more resource-intensive):
+  ```bash
+  yarn scrape:concurrent
+  ```
 
-## Database Migrations
+### Building for Production
 
-- Generate new migration:
-  ```bash
-  yarn migrate:generate
-  ```
-- Apply pending migrations:
-  ```bash
-  yarn migrate:up
-  ```
-- Revert last migration:
-  ```bash
-  yarn migrate:down
-  ```
+1. Build the application:
+   ```bash
+   yarn build
+   ```
+
+2. Start the production server:
+   ```bash
+   yarn start
+   ```
 
 ## Project Structure
 
 ```
-src/
-  bin/          # Command-line scripts
-    scrape.ts   # Scraper CLI
-  config/       # Configuration files
-  database/     # Database schema and migrations
-  scrapers/     # Scraper implementations
-    restaurants/ # Individual restaurant scrapers
-    manager.ts   # Scraper manager
-    types.ts     # Scraper types
-  services/     # Business logic
-  types/        # TypeScript type definitions
-  utils/        # Utility functions
-  index.ts      # Application entry point
+├── src/
+│   ├── bin/           # Command-line scripts
+│   │   └── scrape.ts  # Scraper CLI
+│   ├── config/        # Configuration files
+│   ├── db/            # Database models and utilities
+│   ├── scrapers/      # Scraper implementations
+│   │   └── restaurants/ # Individual restaurant scrapers
+│   ├── utils/         # Utility functions
+│   ├── cron.ts        # Scheduled tasks
+│   └── index.ts       # Application entry point
+├── k8s/               # Kubernetes deployment files
+├── docs/              # Documentation
+└── data/              # Data storage
 ```
 
 ## Environment Variables
 
 - `NODE_ENV` - Application environment (development/production)
 - `PORT` - Server port (default: 3000)
-- `DATABASE_URL` - PostgreSQL connection string
 - `LOG_LEVEL` - Logging level (default: info)
-- `PLAYWRIGHT_BROWSERS_PATH` - Optional: Custom path to Playwright browsers (default: 0, uses system-installed browsers)
 
-## License
+## Deployment
 
-ISC
+### Docker
+
+Build the Docker image:
+```bash
+docker build -t restaurants-backend .
+```
+
+Run the container:
+```bash
+docker run -d --name obedy-backend   -p 4242:4242   -v $(pwd)/data:/app/data   --cap-add=SYS_ADMIN   --shm-size=1g   restaurants-backend
+
+```
